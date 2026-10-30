@@ -104,10 +104,11 @@ async def on_signout(context: TurnContext, _state: TurnState):
     await AGENT_APP.auth.sign_out(context, "GITHUB")
     # Remove cached sessions for this user so a fresh token is used on next sign-in
     user_id = context.activity.from_property.id if context.activity.from_property else "anonymous"
+    prefix = f"{user_id}:"
     async with _sessions_lock:
-        keys_to_remove = [k for k in _sessions if k.startswith(f"{user_id}:")]
+        keys_to_remove = [k for k in _sessions if k.startswith(prefix)]
         for k in keys_to_remove:
-            _sessions.pop(k, None)
+            del _sessions[k]
     await context.send_activity(
         "📜 *The Scribe closes the scroll…* You have been signed out. Send any message to sign in again."
     )
